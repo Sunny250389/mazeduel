@@ -3,7 +3,7 @@ import MazeGrid from "../components/MazeGrid";
 import { T, findTile, bfsPath } from "../utils/mazeGenerator";
 import { saveMaze, saveHOF, updateStats } from "../utils/storage";
 
-const TIME_LIMITS = { easy: 90, medium: 150, hard: 240 };
+const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
 
 export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const { grid: initGrid, width, height } = mazeData;

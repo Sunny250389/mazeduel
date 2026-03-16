@@ -38,9 +38,9 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
 
         {/* Difficulty preview */}
         <div style={styles.diffInfo}>
-          {difficulty === "easy"   && <span>🗺 11×11 &nbsp;⚡ 1 trap &nbsp;⏱ 90s</span>}
-          {difficulty === "medium" && <span>🗺 15×15 &nbsp;⚡ 2 traps &nbsp;🔑 1 key &nbsp;⏱ 150s</span>}
-          {difficulty === "hard"   && <span>🗺 21×21 &nbsp;⚡ 5 traps &nbsp;🔑 2 keys &nbsp;◎ portals &nbsp;⏱ 240s</span>}
+          {difficulty === "easy"   && <span>🗺 11×11 &nbsp;⚡ 1 trap &nbsp;⏱ 60s</span>}
+          {difficulty === "medium" && <span>🗺 15×15 &nbsp;⚡ 2 traps &nbsp;🔑 1 key &nbsp;⏱ 90s</span>}
+          {difficulty === "hard"   && <span>🗺 21×21 &nbsp;⚡ 5 traps &nbsp;🔑 2 keys &nbsp;◎ portals &nbsp;⏱ 150s</span>}
         </div>
 
         <button onClick={() => onPlay(difficulty)} style={styles.primaryBtn}>
