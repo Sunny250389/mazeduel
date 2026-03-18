@@ -29,15 +29,18 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
   // GamePix Integration: Pause/Resume logic
   useEffect(() => {
-  if (typeof window !== 'undefined' && window.GamePix && window.GamePix.on) {
-    window.GamePix.on.pause = () => {
-      pauseGame();
-    };
-    window.GamePix.on.resume = () => {
-      resumeGame();
-    };
+  // Safe check for Resume
+    if (window.GamePix && typeof window.GamePix.resume === 'function') {
+        window.GamePix.resume();
     }
-  }, [pauseGame, resumeGame]);
+
+    return () => {
+    // Safe check for Pause
+        if (window.GamePix && typeof window.GamePix.pause === 'function') {
+            window.GamePix.pause();
+        }
+        };
+  }, []);
 
 
   useEffect(() => { playerRef.current = player; }, [player]);
@@ -49,7 +52,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
         statusRef.current = "lost";
         setStatus("lost");
         // GamePix: Report game over
-        if (window.GamePix) window.GamePix.gameOver();
+        if (window.GamePix && typeof window.GamePix.gameOver === 'function') {window.GamePix.gameOver();}
         return;
     }
     const t = setTimeout(() => setTimeLeft(t => t - 1), 1000);
@@ -108,9 +111,9 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
       // GamePix: Update score and progress
       if (window.GamePix) {
-          window.GamePix.updateScore(coinsRef.current);
-          window.GamePix.updateLevel(movesRef.current); // Use moves or a level counter
-          window.GamePix.happyMoment(); // Trigger celebration
+          if (typeof window.GamePix.updateScore === 'function') window.GamePix.updateScore(coinsRef.current);
+          if (typeof window.GamePix.updateLevel === 'function') window.GamePix.updateLevel(movesRef.current);
+          if (typeof window.GamePix.happyMoment === 'function') window.GamePix.happyMoment();
       }
     }
   }, [width, height, difficulty, initGrid]);
