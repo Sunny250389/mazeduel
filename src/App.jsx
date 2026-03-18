@@ -5,6 +5,7 @@ import BuildScreen   from "./screens/BuildScreen";
 import MyMazesScreen from "./screens/MyMazesScreen";
 import HOFScreen     from "./screens/HOFScreen";
 import { generateMaze, getMazeFromURL, clearMazeFromURL } from "./utils/mazeGenerator";
+import { generateMaze, getMazeFromURL, clearMazeFromURL, decodeMaze } from "./utils/mazeGenerator";
 
 const DIFF_ORDER = ["easy", "medium", "hard"];
 
