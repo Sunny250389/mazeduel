@@ -212,7 +212,6 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
             </>}
             <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap", marginTop:16 }}>
               <button style={styles.btn}      onPointerDown={() => handleFinish("replay")}>🔄 Replay</button>
-              <button style={styles.btn}      onPointerDown={() => handleFinish("harder")}>⬆ Next Harder</button>
               <button style={styles.btnGhost} onPointerDown={() => handleFinish("home")}>🏠 Home</button>
             </div>
           </div>
