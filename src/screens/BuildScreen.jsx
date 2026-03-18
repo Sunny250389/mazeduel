@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { T, encodeMaze } from "../utils/mazeGenerator";
 import { T, encodeMaze, buildShareURL } from "../utils/mazeGenerator";
 
 const TOOLS = [
