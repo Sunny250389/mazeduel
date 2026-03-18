@@ -27,12 +27,28 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const touchStart  = useRef(null);
   const swipeActive = useRef(false);
 
+  // GamePix Integration: Pause/Resume logic
+  useEffect(() => {
+    if (window.GamePix) {
+        window.GamePix.resume(); // Ensure game is active when screen loads
+    }
+    return () => {
+        if (window.GamePix) window.GamePix.pause();
+    };
+  }, []);
+
   useEffect(() => { playerRef.current = player; }, [player]);
 
   // Timer
   useEffect(() => {
     if (statusRef.current !== "playing") return;
-    if (timeLeft <= 0) { statusRef.current = "lost"; setStatus("lost"); return; }
+    if (timeLeft <= 0) {
+        statusRef.current = "lost";
+        setStatus("lost");
+        // GamePix: Report game over
+        if (window.GamePix) window.GamePix.gameOver();
+        return;
+    }
     const t = setTimeout(() => setTimeLeft(t => t - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft]);
@@ -86,6 +102,13 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       };
       saveMaze(record);
       saveHOF({ difficulty, efficiency: eff, moves: movesRef.current, date: record.date });
+
+      // GamePix: Update score and progress
+      if (window.GamePix) {
+          window.GamePix.updateScore(coinsRef.current);
+          window.GamePix.updateLevel(movesRef.current); // Use moves or a level counter
+          window.GamePix.happyMoment(); // Trigger celebration
+      }
     }
   }, [width, height, difficulty, initGrid]);
 
@@ -128,6 +151,12 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
   const efficiency = moves > 0 ? Math.min(100, Math.round((optimalRef.current / moves) * 100)) : 100;
   const stars = efficiency >= 90 ? "⭐⭐⭐⭐" : efficiency >= 75 ? "⭐⭐⭐" : efficiency >= 55 ? "⭐⭐" : "⭐";
+
+  // Wrapper for onFinish to handle GamePix state
+  const handleFinish = (action) => {
+      if (window.GamePix) window.GamePix.pause();
+      onFinish(action);
+  };
 
   return (
     <div style={styles.container}>
@@ -174,15 +203,15 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
               <p>Optimal: {optimalRef.current} | Yours: {moves} moves</p>
             </>}
             <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap", marginTop:16 }}>
-              <button style={styles.btn}      onPointerDown={() => onFinish("replay")}>🔄 Replay</button>
-              <button style={styles.btn}      onPointerDown={() => onFinish("harder")}>⬆ Next Harder</button>
-              <button style={styles.btnGhost} onPointerDown={() => onFinish("home")}>🏠 Home</button>
+              <button style={styles.btn}      onPointerDown={() => handleFinish("replay")}>🔄 Replay</button>
+              <button style={styles.btn}      onPointerDown={() => handleFinish("harder")}>⬆ Next Harder</button>
+              <button style={styles.btnGhost} onPointerDown={() => handleFinish("home")}>🏠 Home</button>
             </div>
           </div>
         </div>
       )}
 
-      <button style={styles.quitBtn} onPointerDown={() => onFinish("home")}>✕ Quit</button>
+      <button style={styles.quitBtn} onPointerDown={() => handleFinish("home")}>✕ Quit</button>
     </div>
   );
 }
@@ -200,6 +229,7 @@ function DpadBtn({ onPress, children }) {
 }
 
 const styles = {
+  // ... (Styles remain the same)
   container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
                 padding:"10px 8px", fontFamily:"monospace",

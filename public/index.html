@@ -2,14 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="MazeDuel: Neon maze racer with traps, sharing & leaderboards!" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!-- GamePix SDK Test Library -->
+    <script src="https://gamepix.blob.core.windows.net/gpxlib/dev/gamepix.js"></script>
     <title>MazeDuel</title>
+    <!-- PWA Styles -->
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #0a0a1a; overflow-x: hidden; }
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #000; color: #fff; }
+      #root { max-width: 100vw; min-height: 100vh; }
+      * { touch-action: none; -webkit-tap-highlight-color: transparent; }
     </style>
   </head>
   <body>
+    <noscript>You need JavaScript enabled to run this app.</noscript>
     <div id="root"></div>
+    <!-- Load React -->
+    <script type="module" crossorigin src="%PUBLIC_URL%/index-%REACT_HASH%.js"></script>
+
+    <!-- GamePix Init (runs on load) -->
+    <script>
+      window.addEventListener('load', function() {
+        if (window.GamePix) {
+          console.log('GamePix SDK loaded');
+          // Ping examples - call from your React game (e.g., onFinish)
+          // GamePix.game.ping('level_complete', {score: 100, level: 'hard'});
+          // GamePix.game.ping('game_over', {score: 50});
+        } else {
+          console.warn('GamePix SDK not loaded');
+        }
+      });
+    </script>
   </body>
 </html>
