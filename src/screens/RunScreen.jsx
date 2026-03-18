@@ -29,13 +29,16 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
   // GamePix Integration: Pause/Resume logic
   useEffect(() => {
-    if (window.GamePix) {
-        window.GamePix.resume(); // Ensure game is active when screen loads
-    }
-    return () => {
-        if (window.GamePix) window.GamePix.pause();
+  if (typeof window !== 'undefined' && window.GamePix && window.GamePix.on) {
+    window.GamePix.on.pause = () => {
+      pauseGame();
     };
-  }, []);
+    window.GamePix.on.resume = () => {
+      resumeGame();
+    };
+    }
+  }, [pauseGame, resumeGame]);
+
 
   useEffect(() => { playerRef.current = player; }, [player]);
 
