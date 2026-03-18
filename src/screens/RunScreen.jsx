@@ -160,7 +160,9 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
   // Wrapper for onFinish to handle GamePix state
   const handleFinish = (action) => {
-      if (window.GamePix) window.GamePix.pause();
+      if (window.GamePix && typeof window.GamePix.pause === 'function') {
+        window.GamePix.pause();
+        }
       onFinish(action);
   };
 
