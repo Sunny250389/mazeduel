@@ -20,7 +20,7 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>🌀 MazeDuel</h1>
-      <p style={styles.sub}>No login. No cloud. Pure maze.</p>
+      <p style={styles.sub}>Pure Maze. Pure Duel</p>
 
       {/* Single Player */}
       <div style={styles.card}>
