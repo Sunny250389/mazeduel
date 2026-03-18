@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { T, encodeMaze } from "../utils/mazeGenerator";
+import { T, encodeMaze, buildShareURL } from "../utils/mazeGenerator";
 
 const TOOLS = [
   { tile: T.WALL,  label:"🧱", name:"Wall"  },
@@ -127,7 +128,7 @@ export default function BuildScreen({ onDone, onCancel }) {
       grid: gridRef.current.map(r => [...r]),
       width: sizeRef.current, height: sizeRef.current, difficulty: "custom"
     };
-    setShareCode(encodeMaze(mazeData));
+    setShareCode(buildShareURL(mazeData));      // generates full url
   };
 
   const copyCode = () => {

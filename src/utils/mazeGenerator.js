@@ -163,10 +163,50 @@ export function findTile(grid, H, W, tile) {
   return null;
 }
 
+// Encode maze into URL-safe base64
 export function encodeMaze(mazeData) {
-  return btoa(JSON.stringify(mazeData)).slice(0, 200);
+  try {
+    const { grid, width, height, difficulty } = mazeData;
+    const flat = grid.flat().map(t => t.toString(36)).join("");
+    const raw  = `${width}x${height}|${difficulty || "custom"}|${flat}`;
+    return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+  } catch { return ""; }
 }
 
+// Build full shareable URL: https://yourapp.vercel.app?maze=XXXXX
+export function buildShareURL(mazeData) {
+  const code = encodeMaze(mazeData);
+  return `${window.location.origin}${window.location.pathname}?maze=${code}`;
+}
+
+// Decode maze from URL-safe base64
 export function decodeMaze(code) {
-  try { return JSON.parse(atob(code)); } catch { return null; }
+  try {
+    const b64  = code.trim().replace(/-/g, "+").replace(/_/g, "/");
+    const pad  = b64.length % 4 === 0 ? "" : "=".repeat(4 - b64.length % 4);
+    const raw  = atob(b64 + pad);
+    const parts = raw.split("|");
+    if (parts.length !== 3) return null;
+    const [dims, difficulty, flat] = parts;
+    const [width, height] = dims.split("x").map(Number);
+    if (!width || !height || flat.length !== width * height) return null;
+    const tiles = flat.split("").map(c => parseInt(c, 36));
+    const grid  = Array.from({ length: height }, (_, y) =>
+      tiles.slice(y * width, y * width + width)
+    );
+    return { grid, width, height, difficulty };
+  } catch { return null; }
+}
+
+// Read maze from ?maze= URL param on page load
+export function getMazeFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get("maze");
+  return code ? decodeMaze(code) : null;
+}
+
+// Clear ?maze= from URL bar without reload
+export function clearMazeFromURL() {
+  const url = window.location.origin + window.location.pathname;
+  window.history.replaceState({}, document.title, url);
 }
