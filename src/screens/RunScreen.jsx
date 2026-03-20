@@ -37,7 +37,6 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
     };
   }, []);
 
-
   useEffect(() => { playerRef.current = player; }, [player]);
 
   // Timer
@@ -259,3 +258,150 @@ const styles = {
                 border:"none", cursor:"pointer", fontSize:14,
                 touchAction:"manipulation" },
 };
+
+
+
+// import React, { useState, useEffect, useCallback, useRef } from "react";
+// import MazeGrid from "../components/MazeGrid";
+// import { T, findTile, bfsPath } from "../utils/mazeGenerator";
+// import { saveMaze, saveHOF, updateStats } from "../utils/storage";
+//
+// const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
+//
+// export default function RunScreen({ mazeData, difficulty, onFinish }) {
+//   // Because the 'key' in App.jsx changes, these lines RE-RUN
+//   // and pick up the new 21x21 width/height every time.
+//   const [grid, setGrid] = useState(() => mazeData.grid.map(r => [...r]));
+//   const [player, setPlayer] = useState(() => {
+//     const s = findTile(mazeData.grid, mazeData.height, mazeData.width, T.START);
+//     return { x: s[0], y: s[1] };
+//   });
+//
+//   const movesRef   = useRef(0);
+//   const coinsRef   = useRef(0);
+//   const statusRef   = useRef("playing");
+//   const optimalRef  = useRef(bfsPath(initGrid, width, height));
+//
+//   const [moves,    setMoves]    = useState(0);
+//   const [coins,    setCoins]    = useState(0);
+//   const [timeLeft, setTimeLeft] = useState(TIME_LIMITS[difficulty] || 90);
+//   const [status,   setStatus]   = useState("playing");
+//
+//   // --- WIN REPORTING & AD SECTION ---
+//
+//   const handleWin = (finalMoves, finalCoins) => {
+//     statusRef.current = "won";
+//     setStatus("won");
+//     const eff = Math.min(100, Math.round((optimalRef.current / finalMoves) * 100));
+//
+//     // Turns updateScore, updateLevel, and happyMoment GREEN
+//     if (window.GamePix) {
+//       if (typeof window.GamePix.updateScore === 'function') window.GamePix.updateScore(finalCoins);
+//       if (typeof window.GamePix.updateLevel === 'function') window.GamePix.updateLevel(finalMoves);
+//       if (typeof window.GamePix.happyMoment === 'function') window.GamePix.happyMoment();
+//     }
+//
+//     // Storage
+//     updateStats(finalCoins);
+//     saveHOF({ difficulty, efficiency: eff, moves: finalMoves, date: new Date().toLocaleDateString() });
+//   };
+//
+//   const handleFinishWithAd = (action) => {
+//     const gp = window.GamePix;
+//     if (gp && typeof gp.interstitialAd === 'function') {
+//       // Turns 'GamePix.interstitialAd' GREEN
+//       gp.interstitialAd().then(() => {
+//         onFinish(action);
+//       }).catch(() => onFinish(action));
+//     } else {
+//       onFinish(action);
+//     }
+//   };
+//
+//   const handleRevive = () => {
+//     const gp = window.GamePix;
+//     if (gp && typeof gp.rewardAd === 'function') {
+//       // Turns 'GamePix.rewardAd' GREEN
+//       gp.rewardAd().then((res) => {
+//         if (res && res.success) {
+//           setTimeLeft(30);
+//           setStatus("playing");
+//           statusRef.current = "playing";
+//         }
+//       });
+//     }
+//   };
+//
+//   // --- GAME LOGIC ---
+//   useEffect(() => {
+//     if (statusRef.current !== "playing") return;
+//     if (timeLeft <= 0) {
+//       statusRef.current = "lost";
+//       setStatus("lost");
+//       if (window.GamePix && typeof window.GamePix.gameOver === 'function') window.GamePix.gameOver();
+//       return;
+//     }
+//     const t = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+//     return () => clearTimeout(t);
+//   }, [timeLeft]);
+//
+//   const move = useCallback((dx, dy) => {
+//     if (statusRef.current !== "playing") return;
+//     const nx = player.x + dx;
+//     const ny = player.y + dy;
+//     if (nx < 0 || ny < 0 || nx >= width || ny >= height) return;
+//
+//     const cell = gridRef.current[ny][nx];
+//     if (cell === T.WALL) return;
+//
+//     if (cell === T.COIN) { coinsRef.current++; setCoins(coinsRef.current); gridRef.current[ny][nx] = T.PATH; }
+//     if (cell === T.TRAP) { setTimeLeft(t => Math.max(0, t - 5)); }
+//
+//     movesRef.current++;
+//     setMoves(movesRef.current);
+//     setPlayer({ x: nx, y: ny });
+//
+//     if (cell === T.EXIT) handleWin(movesRef.current, coinsRef.current);
+//   }, [width, height, player]);
+//
+//   // Controls
+//   useEffect(() => {
+//     const h = (e) => {
+//       const m = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] };
+//       if (m[e.key]) { e.preventDefault(); move(m[e.key][0], m[e.key][1]); }
+//     };
+//     window.addEventListener("keydown", h);
+//     return () => window.removeEventListener("keydown", h);
+//   }, [move]);
+//
+//   return (
+//     <div style={styles.container}>
+//       <div style={styles.hud}>⏱ {timeLeft}s | 🪙 {coins} | 👣 {moves}</div>
+//       <MazeGrid grid={grid} width={width} height={height} player={player} />
+//
+//       {status !== "playing" && (
+//         <div style={styles.overlay}>
+//           <div style={styles.overlayCard}>
+//             <h2>{status === "won" ? "🎉 ESCAPED!" : "💀 TIME'S UP"}</h2>
+//             {status === "lost" && <button style={styles.reviveBtn} onClick={handleRevive}>📺 REVIVE (+30s)</button>}
+//             <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+//               <button style={styles.btn} onClick={() => handleFinishWithAd("replay")}>🔄 Replay</button>
+//               <button style={styles.btn} onClick={() => handleFinishWithAd("harder")}>⬆ Next Harder</button>
+//               <button style={styles.btnGhost} onClick={() => handleFinishWithAd("home")}>🏠 Home</button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+//
+// const styles = {
+//   container: { minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", padding:20, background:"#0a0a1a", color:"#fff", fontFamily:"monospace" },
+//   hud: { background:"#16213e", padding:"10px 20px", borderRadius:10, marginBottom:15 },
+//   overlay: { position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", display:"flex", alignItems:"center", justifyContent:"center" },
+//   overlayCard: { background:"#16213e", padding:30, borderRadius:20, textAlign:"center", border:"2px solid #00ff88" },
+//   btn: { padding:"10px 15px", background:"#00ff88", border:"none", borderRadius:8, cursor:"pointer", fontWeight:"bold" },
+//   btnGhost: { padding:"10px 15px", background:"transparent", border:"1px solid #444", color:"#888", borderRadius:8, cursor:"pointer" },
+//   reviveBtn: { width:"100%", padding:12, background:"#ff00ff", border:"none", borderRadius:8, color:"#fff", fontWeight:"bold", cursor:"pointer" }
+// };
