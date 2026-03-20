@@ -8,18 +8,16 @@
     <meta name="description" content="MazeDuel: Neon maze racer with traps, sharing & leaderboards!" />
     <link rel="manifest" href="./manifest.json" />
     <script>
-      // Set the GamePix SDK version to load
-      window.GamePix = window.GamePix || {};
-      const methods = ['resume', 'pause', 'updateScore', 'updateLevel', 'happyMoment', 'gameOver'];
-      methods.forEach(method => {
-        if (typeof window.GamePix[method] !== 'function') {
-          window.GamePix[method] = function() {
-            console.log(`[GamePix Mock] ${method} called with:`, arguments);
-          };
-        }
-      });
+      window.__MAZEDUEL_GAMEPIX_READY__ = false;
+
+      window.__onGamePixLoaded = function () {
+        window.__MAZEDUEL_GAMEPIX_READY__ = !!window.GamePix;
+        window.dispatchEvent(new CustomEvent("gamepix:ready", {
+          detail: { ready: window.__MAZEDUEL_GAMEPIX_READY__ }
+        }));
+      };
     </script>
-    <script src="https://integration.gamepix.com/sdk/v3/gamepix.sdk.js"></script>
+    <script src="https://integration.gamepix.com/sdk/v3/gamepix.sdk.js" onload="window.__onGamePixLoaded()" async></script>
 
     <title>MazeDuel</title>
 
@@ -46,17 +44,5 @@
     <noscript>You need JavaScript enabled to run this app.</noscript>
 
     <div id="root"></div>
-
-    <script>
-      // GamePix Initialization listener
-      window.addEventListener('load', function() {
-        if (window.GamePix) {
-          console.log('MazeDuel: GamePix SDK initialized');
-          // The SDK is now ready to use via window.GamePix in your React components
-        } else {
-          console.error('MazeDuel: GamePix SDK failed to load');
-        }
-      });
-    </script>
   </body>
 </html>

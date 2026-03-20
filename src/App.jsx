@@ -5,6 +5,7 @@ import BuildScreen from "./screens/BuildScreen";
 import MyMazesScreen from "./screens/MyMazesScreen";
 import HOFScreen from "./screens/HOFScreen";
 import { generateMaze, getMazeFromURL, clearMazeFromURL } from "./utils/mazeGenerator";
+import { reportGamePause, reportGameReady } from "./utils/gamepix";
 
 const DIFF_ORDER = ["easy", "medium", "hard"];
 
@@ -20,6 +21,23 @@ export default function App() {
       setMazeData(urlMaze);
       setDifficulty(urlMaze.difficulty || "medium");
     }
+  }, []);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        reportGameReady();
+      } else {
+        reportGamePause();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    handleVisibility();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   const goPlay = (diff, data = null) => {
@@ -39,8 +57,9 @@ export default function App() {
         difficulty={difficulty}
         onPlay={goPlay}
         onBuild={() => setScreen("build")}
-        onMazes={() => setScreen("mazes")}
-        onHOF={() => setScreen("hof")}
+        onViewMazes={() => setScreen("mazes")}
+        onViewHOF={() => setScreen("hof")}
+        onRunShared={() => setScreen("mazes")}
       />
     );
   }
