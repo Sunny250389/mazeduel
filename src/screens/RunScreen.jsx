@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import MazeGrid from "../components/MazeGrid";
 import { T, findTile, bfsPath } from "../utils/mazeGenerator";
 import { saveMaze, saveHOF, updateStats } from "../utils/storage";
+import { callGamePix, reportGamePause, reportGameReady } from "../utils/gamepix";
 
 const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
 
@@ -27,19 +28,13 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const touchStart  = useRef(null);
   const swipeActive = useRef(false);
 
-  // GamePix Integration: Pause/Resume logic
+  // GamePix Integration: Pause/Resume lifecycle
   useEffect(() => {
-  // Safe check for Resume
-    if (window.GamePix && typeof window.GamePix.resume === 'function') {
-        window.GamePix.resume();
-    }
+    reportGameReady();
 
     return () => {
-    // Safe check for Pause
-        if (window.GamePix && typeof window.GamePix.pause === 'function') {
-            window.GamePix.pause();
-        }
-        };
+      reportGamePause();
+    };
   }, []);
 
 
@@ -52,7 +47,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
         statusRef.current = "lost";
         setStatus("lost");
         // GamePix: Report game over
-        if (window.GamePix && typeof window.GamePix.gameOver === 'function') {window.GamePix.gameOver();}
+        callGamePix("gameOver");
         return;
     }
     const t = setTimeout(() => setTimeLeft(t => t - 1), 1000);
@@ -110,11 +105,9 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       saveHOF({ difficulty, efficiency: eff, moves: movesRef.current, date: record.date });
 
       // GamePix: Update score and progress
-      if (window.GamePix) {
-          if (typeof window.GamePix.updateScore === 'function') window.GamePix.updateScore(coinsRef.current);
-          if (typeof window.GamePix.updateLevel === 'function') window.GamePix.updateLevel(movesRef.current);
-          if (typeof window.GamePix.happyMoment === 'function') window.GamePix.happyMoment();
-      }
+      callGamePix("updateScore", coinsRef.current);
+      callGamePix("updateLevel", movesRef.current);
+      callGamePix("happyMoment");
     }
   }, [width, height, difficulty, initGrid]);
 
@@ -160,10 +153,8 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
 
   // Wrapper for onFinish to handle GamePix state
   const handleFinish = (action) => {
-      if (window.GamePix && typeof window.GamePix.pause === 'function') {
-        window.GamePix.pause();
-        }
-      onFinish(action);
+    reportGamePause();
+    onFinish(action);
   };
 
   return (
