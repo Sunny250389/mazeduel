@@ -119,8 +119,6 @@ export default function App() {
         difficulty={difficulty}
         onPlay={goPlay}
         onBuild={() => setScreen("build")}
-        //onMazes={() => setScreen("mazes")}
-        //onHOF={() => setScreen("hof")}
         onViewMazes={() => setScreen("mazes")}
         onViewHOF={() => setScreen("hof")}
         onRunShared={() => setScreen("mazes")}
