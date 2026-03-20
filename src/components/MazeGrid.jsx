@@ -3,7 +3,7 @@ import { T } from "../utils/mazeGenerator";
 
 const TILE_COLORS = {
   [T.WALL]:     "#1a1a2e",
-  [T.PATH]:     "#16213e",
+  [T.PATH]:     "#2a3f66",
   [T.START]:    "#00ff88",
   [T.EXIT]:     "#ff6b35",
   [T.KEY]:      "#ffd700",
