@@ -1,4 +1,3 @@
-import React from "react";
 import React, { useState } from "react";
 import { loadMazes } from "../utils/storage";
 import { encodeMaze } from "../utils/mazeGenerator";
@@ -31,7 +30,7 @@ export default function MyMazesScreen({ onPlay, onBack }) {
           </div>
           <div style={{ color: "#ffd700" }}>Best: {m.bestEff}%</div>
           <div style={styles.row}>
-            <<button style={styles.btn} onClick={() => onPlay(m)}>
+            <button style={styles.btn} onClick={() => onPlay(m)}>
               ▶ Play Again
             </button>
             <button style={styles.ghostBtn} onClick={() => handleShare(m, i)}>
