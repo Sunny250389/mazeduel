@@ -1,4 +1,5 @@
 import React from "react";
+import React, { useEffect, useState } from "react";
 import { T } from "../utils/mazeGenerator";
 
 const TILE_COLORS = {
@@ -26,32 +27,64 @@ const TILE_LABELS = {
 };
 
 export default function MazeGrid({ grid, width, height, player }) {
+  const [viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("orientationchange", updateViewport);
+    window.visualViewport?.addEventListener("resize", updateViewport);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", updateViewport);
+      window.visualViewport?.removeEventListener("resize", updateViewport);
+    };
+  }, []);
   const cellSize = Math.min(
-    Math.floor((window.innerWidth * 0.92) / width),
-    Math.floor((window.innerHeight * 0.65) / height),
+    Math.floor((viewport.width * 0.92) / width),
+    Math.floor((viewport.height * 0.65) / height),
     36
   );
 
   return (
-    <div style={{ display:"inline-block", border:"2px solid #00ff88",
-                  boxShadow:"0 0 20px #00ff8844", borderRadius:4 }}>
+    <div
+      style={{
+        display: "inline-block",
+        border: "2px solid #00ff88",
+        boxShadow: "0 0 20px #00ff8844",
+        borderRadius: 4,
+      }}
+    >
       {grid.map((row, y) => (
-        <div key={y} style={{ display:"flex" }}>
+        <div key={y} style={{ display: "flex" }}>
           {row.map((cell, x) => {
             const isPlayer = player && player.x === x && player.y === y;
             return (
-              <div key={x} style={{
-                width:  cellSize,
-                height: cellSize,
-                background: isPlayer ? "transparent" : TILE_COLORS[cell] ?? "#16213e",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                fontSize: cellSize * 0.55,
-                fontWeight:"bold",
-                color: "#fff",
-                boxSizing:"border-box",
-                border: cell === T.WALL ? "none" : "1px solid #0f3460",
-              }}>
-                {isPlayer ? "🟢" : (TILE_LABELS[cell] || "")}
+              <div
+                key={x}
+                style={{
+                  width: cellSize,
+                  height: cellSize,
+                  background: isPlayer ? "transparent" : TILE_COLORS[cell] ?? "#2a3f66",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: cellSize * 0.55,
+                  fontWeight: "bold",
+                  color: "#fff",
+                  boxSizing: "border-box",
+                  border: cell === T.WALL ? "none" : "1px solid #0f3460",
+                }}
+              >
+                {isPlayer ? "🟢" : TILE_LABELS[cell] || ""}
               </div>
             );
           })}
