@@ -35,6 +35,7 @@ export default function BuildScreen({ onDone, onCancel }) {
   const [tool,      setTool]      = useState(T.PATH);
   const [shareCode, setShareCode] = useState(null);
   const [copied,    setCopied]    = useState(false);
+  const [validationMsg, setValidationMsg] = useState("");
   const [,          forceRender]  = useState(0);
 
   const gridRef      = useRef(makeGrid(11));
@@ -50,6 +51,7 @@ export default function BuildScreen({ onDone, onCancel }) {
     gridRef.current = makeGrid(s);
     setSize(s);
     setShareCode(null);
+    setValidationMsg("");
     forceRender(n => n + 1);
   };
 
@@ -66,8 +68,9 @@ export default function BuildScreen({ onDone, onCancel }) {
           if (g[r][c] === t) g[r][c] = T.PATH;
     }
     g[y][x] = t;
+    if (validationMsg) setValidationMsg("");
     forceRender(n => n + 1);
-  }, []);
+  }, [validationMsg]);
 
   const cellFromMouse = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
@@ -122,7 +125,11 @@ export default function BuildScreen({ onDone, onCancel }) {
   };
 
   const handleDone = () => {
-    if (!validate()) { alert("Place both a Start (S) and Exit (E) tile first!"); return; }
+    if (!validate()) {
+      setValidationMsg("Place both a Start (S) and Exit (E) tile first.");
+      return;
+    }
+    setValidationMsg("");
     const mazeData = {
       grid: gridRef.current.map(r => [...r]),
       width: sizeRef.current, height: sizeRef.current, difficulty: "custom"
@@ -177,6 +184,7 @@ export default function BuildScreen({ onDone, onCancel }) {
         💡 Grid starts as <b>all walls</b>. Use <b>⬜ Erase</b> to carve open paths,
         then place <b style={{color:"#00ff88"}}>S</b> Start + <b style={{color:"#ff6b35"}}>E</b> Exit.
       </p>
+      {validationMsg && <p style={styles.validationMsg}>⚠️ {validationMsg}</p>}
 
       <div
         ref={containerRef}
@@ -266,4 +274,5 @@ const styles = {
                 marginBottom:12, wordBreak:"break-all" },
   codeText:   { color:"#ffd700", fontSize:11, lineHeight:1.6 },
   shareHint:  { color:"#888", fontSize:12, margin:"10px 0 12px 0" },
+  validationMsg: { color:"#ffbf69", fontSize:12, margin:"2px 0 10px 0", textAlign:"center" },
 };

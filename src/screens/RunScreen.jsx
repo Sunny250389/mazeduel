@@ -27,6 +27,14 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const statusRef   = useRef("playing");
   const touchStart  = useRef(null);
   const swipeActive = useRef(false);
+  const screenRef = useRef(null);
+  const hudRef = useRef(null);
+  const dpadRef = useRef(null);
+  const quitRef = useRef(null);
+  const [mazeBounds, setMazeBounds] = useState({
+    maxWidth: Math.floor(window.innerWidth * 0.92),
+    maxHeight: Math.floor(window.innerHeight * 0.62),
+  });
 
   // GamePix Integration: Pause/Resume lifecycle
   useEffect(() => {
@@ -124,6 +132,36 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
     return () => window.removeEventListener("keydown", handler);
   }, [move]);
 
+  useEffect(() => {
+    const updateMazeBounds = () => {
+      const root = screenRef.current;
+      if (!root) return;
+      const rootRect = root.getBoundingClientRect();
+      const hudHeight = hudRef.current?.getBoundingClientRect().height || 0;
+      const dpadHeight = dpadRef.current?.getBoundingClientRect().height || 0;
+      const quitHeight = quitRef.current?.getBoundingClientRect().height || 0;
+      const verticalPadding = 64;
+      const maxWidth = Math.max(160, rootRect.width - 24);
+      const maxHeight = Math.max(160, rootRect.height - hudHeight - dpadHeight - quitHeight - verticalPadding);
+      setMazeBounds({ maxWidth, maxHeight });
+    };
+
+    updateMazeBounds();
+    const observer = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(updateMazeBounds)
+      : null;
+    if (observer && screenRef.current) observer.observe(screenRef.current);
+    if (observer && hudRef.current) observer.observe(hudRef.current);
+    if (observer && dpadRef.current) observer.observe(dpadRef.current);
+    if (observer && quitRef.current) observer.observe(quitRef.current);
+    window.addEventListener("resize", updateMazeBounds);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateMazeBounds);
+    };
+  }, []);
+
   // Swipe on maze area
   const handleMazeTouchStart = (e) => {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -157,8 +195,8 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.hud}>
+    <div ref={screenRef} style={styles.container}>
+      <div ref={hudRef} style={styles.hud}>
         <span>⏱ {timeLeft}s</span>
         <span>🪙 {coins}</span>
         <span>🔑 {keys}</span>
@@ -172,11 +210,18 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
         onTouchEnd={handleMazeTouchEnd}
         style={{ touchAction: "none" }}
       >
-        <MazeGrid grid={grid} width={width} height={height} player={player} />
+        <MazeGrid
+          grid={grid}
+          width={width}
+          height={height}
+          player={player}
+          maxWidth={mazeBounds.maxWidth}
+          maxHeight={mazeBounds.maxHeight}
+        />
       </div>
 
       {/* D-Pad */}
-      <div style={styles.dpad}>
+      <div ref={dpadRef} style={styles.dpad}>
         <div style={styles.dpadRow}>
           <DpadBtn onPress={dpadPress(0,-1)}>▲</DpadBtn>
         </div>
@@ -208,7 +253,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
         </div>
       )}
 
-      <button style={styles.quitBtn} onPointerDown={() => handleFinish("home")}>✕ Quit</button>
+      <button ref={quitRef} style={styles.quitBtn} onPointerDown={() => handleFinish("home")}>✕ Quit</button>
     </div>
   );
 }
