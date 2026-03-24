@@ -153,7 +153,7 @@ const styles = {
   howToggle:    { width:"100%", background:"transparent", color:"#00ff88",
                   border:"none", cursor:"pointer", fontSize:16,
                   fontWeight:"bold", textAlign:"left", fontFamily:"monospace", padding:0 },
-  howBody:      { marginTop:14 },
+  howBody:      { marginTop:14, maxHeight:"34vh", overflowY:"auto", paddingRight:4, WebkitOverflowScrolling:"touch" },
   howText:      { color:"#ccc", fontSize:13, marginBottom:12, lineHeight:1.6 },
   howSection:   { marginBottom:14 },
   howLabel:     { color:"#ffd700", fontSize:13, display:"block", marginBottom:6 },
