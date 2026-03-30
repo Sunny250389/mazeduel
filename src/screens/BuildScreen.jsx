@@ -30,6 +30,14 @@ function makeGrid(size) {
   );
 }
 
+export function calculateBuildCellSize(size, maxWidth, maxHeight) {
+  const safeSize = Math.max(1, size || 1);
+  const widthPx = Math.floor((maxWidth || 0) / safeSize);
+  const heightPx = Math.floor((maxHeight || 0) / safeSize);
+  const raw = Math.min(widthPx, heightPx, 36);
+  return Math.max(8, raw);
+}
+
 export default function BuildScreen({ onDone, onCancel }) {
   const [size,      setSize]      = useState(11);
   const [tool,      setTool]      = useState(T.PATH);
@@ -43,6 +51,11 @@ export default function BuildScreen({ onDone, onCancel }) {
   const toolRef      = useRef(T.PATH);
   const sizeRef      = useRef(11);
   const containerRef = useRef(null);
+  const gridAreaRef  = useRef(null);
+  const [gridBounds, setGridBounds] = useState({
+    maxWidth: Math.max(120, window.innerWidth - 24),
+    maxHeight: Math.max(120, window.innerHeight * 0.45),
+  });
 
   const selectTool = (t) => { toolRef.current = t; setTool(t); };
 
@@ -112,6 +125,29 @@ export default function BuildScreen({ onDone, onCancel }) {
     };
   }, [paintCell]);
 
+  useEffect(() => {
+    const updateGridBounds = () => {
+      const area = gridAreaRef.current;
+      if (!area) return;
+      const rect = area.getBoundingClientRect();
+      setGridBounds({
+        maxWidth: Math.max(120, rect.width - 4),
+        maxHeight: Math.max(120, rect.height - 4),
+      });
+    };
+
+    updateGridBounds();
+    const observer = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(updateGridBounds)
+      : null;
+    if (observer && gridAreaRef.current) observer.observe(gridAreaRef.current);
+    window.addEventListener("resize", updateGridBounds);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateGridBounds);
+    };
+  }, []);
+
   const validate = () => {
     const g = gridRef.current;
     const s = sizeRef.current;
@@ -143,9 +179,10 @@ export default function BuildScreen({ onDone, onCancel }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const cellPx = Math.min(
-    Math.floor((Math.min(window.innerWidth, 500) - 32) / size), 36
-  );
+//   const cellPx = Math.min(
+//     Math.floor((Math.min(window.innerWidth, 500) - 32) / size), 36
+//   );
+  const cellPx = calculateBuildCellSize(size, gridBounds.maxWidth, gridBounds.maxHeight);
 
   const g = gridRef.current;
 
@@ -186,32 +223,60 @@ export default function BuildScreen({ onDone, onCancel }) {
       </p>
       {validationMsg && <p style={styles.validationMsg}>⚠️ {validationMsg}</p>}
 
-      <div
-        ref={containerRef}
-        style={{ display:"grid",
-                 gridTemplateColumns: `repeat(${size}, ${cellPx}px)`,
-                 border:"2px solid #0f3460", cursor:"crosshair",
-                 touchAction:"none", userSelect:"none", WebkitUserSelect:"none" }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-      >
-        {g.map((row, y) =>
-          row.map((cell, x) => (
-            <div key={`${x}-${y}`} style={{
-              width: cellPx, height: cellPx,
-              background: COLORS[cell] ?? "#2a2a4a",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize: Math.max(cellPx * 0.45, 8),
-              boxSizing:"border-box",
-              border:"1px solid #0f3460",
-              pointerEvents:"none",
-            }}>
-              {TILE_LABELS[cell] || ""}
-            </div>
-          ))
-        )}
+{/*       <div */}
+{/*         ref={containerRef} */}
+{/*         style={{ display:"grid", */}
+{/*                  gridTemplateColumns: `repeat(${size}, ${cellPx}px)`, */}
+{/*                  border:"2px solid #0f3460", cursor:"crosshair", */}
+{/*                  touchAction:"none", userSelect:"none", WebkitUserSelect:"none" }} */}
+{/*         onMouseDown={onMouseDown} */}
+{/*         onMouseMove={onMouseMove} */}
+{/*         onMouseUp={onMouseUp} */}
+{/*         onMouseLeave={onMouseUp} */}
+{/*       > */}
+{/*         {g.map((row, y) => */}
+{/*           row.map((cell, x) => ( */}
+{/*             <div key={`${x}-${y}`} style={{ */}
+{/*               width: cellPx, height: cellPx, */}
+{/*               background: COLORS[cell] ?? "#2a2a4a", */}
+{/*               display:"flex", alignItems:"center", justifyContent:"center", */}
+{/*               fontSize: Math.max(cellPx * 0.45, 8), */}
+{/*               boxSizing:"border-box", */}
+{/*               border:"1px solid #0f3460", */}
+{/*               pointerEvents:"none", */}
+{/*             }}> */}
+{/*               {TILE_LABELS[cell] || ""} */}
+{/*             </div> */}
+{/*           )) */}
+{/*         )} */}
+      <div ref={gridAreaRef} style={styles.gridArea}>
+        <div
+          ref={containerRef}
+          style={{ display:"grid",
+                   gridTemplateColumns: `repeat(${size}, ${cellPx}px)`,
+                   border:"2px solid #0f3460", cursor:"crosshair",
+                   touchAction:"none", userSelect:"none", WebkitUserSelect:"none" }}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
+        >
+          {g.map((row, y) =>
+            row.map((cell, x) => (
+              <div key={`${x}-${y}`} style={{
+                width: cellPx, height: cellPx,
+                background: COLORS[cell] ?? "#2a2a4a",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize: Math.max(cellPx * 0.45, 8),
+                boxSizing:"border-box",
+                border:"1px solid #0f3460",
+                pointerEvents:"none",
+              }}>
+                {TILE_LABELS[cell] || ""}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       <div style={{...styles.row, marginTop:14}}>
@@ -247,9 +312,13 @@ export default function BuildScreen({ onDone, onCancel }) {
 }
 
 const styles = {
-  container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
+//  container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
+  container:  { minHeight:"100vh", height:"100vh", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
-                padding:"16px 12px", fontFamily:"monospace" },
+                padding:"16px 12px", fontFamily:"monospace", boxSizing:"border-box",
+                overflow:"hidden" },
+  gridArea:   { flex:1, width:"100%", display:"flex", justifyContent:"center",
+                alignItems:"center", minHeight:120, marginTop:6, marginBottom:6 },
   title:      { color:"#00ff88", marginBottom:10 },
   row:        { display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center", marginBottom:8 },
   sizeBtn:    { padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer",
