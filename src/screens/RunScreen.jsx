@@ -49,10 +49,6 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
     maxWidth: Math.floor(window.innerWidth * 0.92),
     maxHeight: Math.floor(window.innerHeight * 0.62),
   });
-  const [showDpad, setShowDpad] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
-    return window.matchMedia("(pointer: coarse)").matches;
-  });
 
   // GamePix Integration: Pause/Resume lifecycle
   useEffect(() => {
@@ -151,21 +147,12 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
   }, [move]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const pointerQuery = window.matchMedia("(pointer: coarse)");
-    const updateControlMode = () => setShowDpad(pointerQuery.matches);
-    updateControlMode();
-    pointerQuery.addEventListener?.("change", updateControlMode);
-    return () => pointerQuery.removeEventListener?.("change", updateControlMode);
-  }, []);
-
-  useEffect(() => {
     const updateMazeBounds = () => {
       const root = screenRef.current;
       if (!root) return;
       const rootRect = root.getBoundingClientRect();
       const hudHeight = hudRef.current?.getBoundingClientRect().height || 0;
-      const dpadHeight = showDpad ? (dpadRef.current?.getBoundingClientRect().height || 0) : 0;
+      const dpadHeight = dpadRef.current?.getBoundingClientRect().height || 0;
       const quitHeight = quitRef.current?.getBoundingClientRect().height || 0;
       setMazeBounds(calculateMazeBounds(rootRect.width, rootRect.height, { hudHeight, dpadHeight, quitHeight }));
     };
@@ -176,7 +163,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       : null;
     if (observer && screenRef.current) observer.observe(screenRef.current);
     if (observer && hudRef.current) observer.observe(hudRef.current);
-    if (observer && dpadRef.current && showDpad) observer.observe(dpadRef.current);
+    if (observer && dpadRef.current) observer.observe(dpadRef.current);
     if (observer && quitRef.current) observer.observe(quitRef.current);
     window.addEventListener("resize", updateMazeBounds);
 
@@ -184,7 +171,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       observer?.disconnect();
       window.removeEventListener("resize", updateMazeBounds);
     };
-  }, [showDpad]);
+  }, []);
 
   // Swipe on maze area
   const handleMazeTouchStart = (e) => {
@@ -244,22 +231,20 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
         />
       </div>
 
-      {/* D-Pad (touch devices) */}
-      {showDpad && (
-        <div ref={dpadRef} style={styles.dpad}>
-          <div style={styles.dpadRow}>
-            <DpadBtn onPress={dpadPress(0,-1)}>▲</DpadBtn>
-          </div>
-          <div style={styles.dpadRow}>
-            <DpadBtn onPress={dpadPress(-1,0)}>◀</DpadBtn>
-            <div style={styles.dpadCenter} />
-            <DpadBtn onPress={dpadPress(1,0)}>▶</DpadBtn>
-          </div>
-          <div style={styles.dpadRow}>
-            <DpadBtn onPress={dpadPress(0,1)}>▼</DpadBtn>
-          </div>
+      {/* D-Pad */}
+      <div ref={dpadRef} style={styles.dpad}>
+        <div style={styles.dpadRow}>
+          <DpadBtn onPress={dpadPress(0,-1)}>▲</DpadBtn>
         </div>
-      )}
+        <div style={styles.dpadRow}>
+          <DpadBtn onPress={dpadPress(-1,0)}>◀</DpadBtn>
+          <div style={styles.dpadCenter} />
+          <DpadBtn onPress={dpadPress(1,0)}>▶</DpadBtn>
+        </div>
+        <div style={styles.dpadRow}>
+          <DpadBtn onPress={dpadPress(0,1)}>▼</DpadBtn>
+        </div>
+      </div>
 
       {status !== "playing" && (
         <div style={styles.overlay}>
