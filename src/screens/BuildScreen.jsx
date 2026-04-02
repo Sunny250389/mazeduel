@@ -173,8 +173,46 @@ export default function BuildScreen({ onDone, onCancel }) {
     setShareCode(buildShareURL(mazeData));      // generates full url
   };
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(shareCode);
+  const copyCode = async () => {
+    if (!shareCode) return;
+
+    let copiedOk = false;
+
+    // Primary API (may be blocked in embedded/sandboxed iframes)
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(shareCode);
+        copiedOk = true;
+      } catch (_) {
+        copiedOk = false;
+      }
+    }
+
+    // Fallback for restricted iframe environments (e.g. GamePix)
+    if (!copiedOk) {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareCode;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.top = "-9999px";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        copiedOk = document.execCommand("copy");
+        document.body.removeChild(textArea);
+      } catch (_) {
+        copiedOk = false;
+      }
+    }
+
+    if (!copiedOk) {
+      // Last-resort manual copy prompt.
+      window.prompt("Copy your maze code:", shareCode);
+      return;
+    }
+
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

@@ -31,11 +31,11 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
 
       {/* Single Player */}
       <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
-        <h2 style={styles.sectionTitle}>Single Player</h2>
+        <h2 style={{ ...styles.sectionTitle, ...(isCompact ? styles.sectionTitleCompact : null) }}>Single Player</h2>
         <div style={styles.row}>
           {["easy","medium","hard"].map(d => (
             <button key={d} onClick={() => setDifficulty(d)}
-              style={{ ...styles.diffBtn,
+              style={{ ...styles.diffBtn, ...(isCompact ? styles.diffBtnCompact : null),
                 background: difficulty === d ? "#00ff88" : "#0f3460",
                 color:      difficulty === d ? "#000"    : "#fff" }}>
               {d.charAt(0).toUpperCase() + d.slice(1)}
@@ -50,22 +50,22 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
           {difficulty === "hard"   && <span>🗺 21×21 &nbsp;⚡ 5 traps &nbsp;🔑 2 keys &nbsp;◎ portals &nbsp;⏱ 150s</span>}
         </div>
 
-        <button onClick={() => onPlay(difficulty)} style={styles.primaryBtn}>
+        <button onClick={() => onPlay(difficulty)} style={{ ...styles.primaryBtn, ...(isCompact ? styles.primaryBtnCompact : null) }}>
           ▶ Play Now
         </button>
       </div>
 
       {/* Two Players */}
       <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
-        <h2 style={styles.sectionTitle}>Two Players</h2>
+        <h2 style={{ ...styles.sectionTitle, ...(isCompact ? styles.sectionTitleCompact : null) }}>Two Players</h2>
         <div style={styles.row}>
-          <button onClick={onBuild}     style={styles.secondaryBtn}>🔨 Build Maze</button>
-          <button onClick={onRunShared} style={styles.secondaryBtn}>📥 Friend's Maze</button>
+          <button onClick={onBuild}     style={{ ...styles.secondaryBtn, ...(isCompact ? styles.secondaryBtnCompact : null) }}>🔨 Build Maze</button>
+          <button onClick={onRunShared} style={{ ...styles.secondaryBtn, ...(isCompact ? styles.secondaryBtnCompact : null) }}>📥 Friend's Maze</button>
         </div>
       </div>
 
       {/* How to Play — collapsible */}
-      <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
+      {!isCompact && <div style={styles.card}>
         <button onClick={() => setShowHow(h => !h)} style={styles.howToggle}>
           {showHow ? "▲" : "▼"} &nbsp; How to Play
         </button>
@@ -121,7 +121,7 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
 
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Bottom Nav */}
       <div style={styles.row}>
@@ -149,19 +149,23 @@ const styles = {
                   marginBottom:14, width:"100%", maxWidth:420, border:"1px solid #0f3460" },
   cardCompact:  { padding:"14px 16px", marginBottom:10 },
   sectionTitle: { margin:"0 0 12px 0", fontSize:18, color:"#00ff88" },
+  sectionTitleCompact: { marginBottom:8, fontSize:16 },
   row:          { display:"flex", gap:10, flexWrap:"wrap", marginBottom:10 },
   diffBtn:      { flex:1, padding:"10px 0", borderRadius:8, border:"none",
                   cursor:"pointer", fontWeight:"bold", fontSize:14 },
+  diffBtnCompact: { padding:"8px 0", fontSize:13 },
   diffInfo:     { color:"#aaa", fontSize:12, marginBottom:10, textAlign:"center" },
   primaryBtn:   { width:"100%", padding:14, background:"#00ff88", color:"#000",
                   border:"none", borderRadius:10, fontWeight:"bold",
                   fontSize:16, cursor:"pointer", marginTop:4 },
+  primaryBtnCompact: { padding:10, fontSize:14 },
   secondaryBtn: { flex:1, padding:12, background:"#0f3460", color:"#fff",
                   border:"1px solid #00ff8844", borderRadius:8, cursor:"pointer", fontSize:14 },
+  secondaryBtnCompact: { padding:9, fontSize:13 },
   ghostBtn:     { flex:1, padding:10, background:"transparent", color:"#888",
                   border:"1px solid #333", borderRadius:8, cursor:"pointer" },
   statsText:    { color:"#555", marginTop:12, fontSize:13 },
-  statsTextCompact: { marginTop:6, marginBottom:4 },
+  statsTextCompact: { marginTop:2, marginBottom:2, fontSize:12 },
   howToggle:    { width:"100%", background:"transparent", color:"#00ff88",
                   border:"none", cursor:"pointer", fontSize:16,
                   fontWeight:"bold", textAlign:"left", fontFamily:"monospace", padding:0 },
