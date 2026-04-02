@@ -287,7 +287,10 @@ export default function BuildScreen({ onDone, onCancel }) {
 {/*             </div> */}
 {/*           )) */}
 {/*         )} */}
-      <div ref={gridAreaRef} style={styles.gridArea}>
+      <div
+        ref={gridAreaRef}
+        style={{ ...styles.gridArea, ...(shareCode ? styles.gridAreaWithShare : null) }}
+      >
         <div
           ref={containerRef}
           style={{ display:"grid",
@@ -351,12 +354,13 @@ export default function BuildScreen({ onDone, onCancel }) {
 
 const styles = {
 //  container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
-  container:  { minHeight:"100vh", height:"100vh", background:"#0a0a1a", color:"#fff",
+  container:  { minHeight:"100dvh", height:"100dvh", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
                 padding:"16px 12px", fontFamily:"monospace", boxSizing:"border-box",
-                overflow:"hidden" },
+                justifyContent:"flex-start", overflowY:"auto", overflowX:"hidden" },
   gridArea:   { flex:1, width:"100%", display:"flex", justifyContent:"center",
                 alignItems:"center", minHeight:120, marginTop:6, marginBottom:6 },
+  gridAreaWithShare: { flex:"0 0 auto", minHeight:0, marginTop:4, marginBottom:8 },
   title:      { color:"#00ff88", marginBottom:10 },
   row:        { display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center", marginBottom:8 },
   sizeBtn:    { padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer",
@@ -375,7 +379,7 @@ const styles = {
   ghostBtn:   { padding:"11px 16px", background:"transparent", color:"#888",
                 border:"1px solid #333", borderRadius:8, cursor:"pointer", touchAction:"manipulation" },
   shareCard:  { background:"#16213e", border:"2px solid #00ff88", borderRadius:12,
-                padding:"20px 24px", width:"100%", maxWidth:420, textAlign:"center" },
+                padding:"16px 18px", width:"100%", maxWidth:420, textAlign:"center", marginBottom:12 },
   shareTitle: { color:"#00ff88", fontWeight:"bold", fontSize:18, margin:"0 0 4px 0" },
   codeBox:    { background:"#0a0a1a", borderRadius:8, padding:"10px",
                 marginBottom:12, wordBreak:"break-all" },
