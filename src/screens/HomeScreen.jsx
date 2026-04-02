@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { loadMazes, getStats } from "../utils/storage";
 
 const TILES = [
@@ -15,15 +15,22 @@ const TILES = [
 export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, onViewHOF }) {
   const [difficulty, setDifficulty] = useState("easy");
   const [showHow, setShowHow]       = useState(false);
+  const [isCompact, setIsCompact]   = useState(() => window.innerHeight <= 450);
   const stats = getStats();
 
+  useEffect(() => {
+    const onResize = () => setIsCompact(window.innerHeight <= 450);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>🌀 MazeDuel</h1>
-      <p style={styles.sub}>Pure Maze. Pure Duel</p>
+    <div style={{ ...styles.container, ...(isCompact ? styles.containerCompact : null) }}>
+      <h1 style={{ ...styles.title, ...(isCompact ? styles.titleCompact : null) }}>🌀 MazeDuel</h1>
+      {!isCompact && <p style={styles.sub}>Pure Maze. Pure Duel</p>}
 
       {/* Single Player */}
-      <div style={styles.card}>
+      <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
         <h2 style={styles.sectionTitle}>Single Player</h2>
         <div style={styles.row}>
           {["easy","medium","hard"].map(d => (
@@ -49,7 +56,7 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
       </div>
 
       {/* Two Players */}
-      <div style={styles.card}>
+      <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
         <h2 style={styles.sectionTitle}>Two Players</h2>
         <div style={styles.row}>
           <button onClick={onBuild}     style={styles.secondaryBtn}>🔨 Build Maze</button>
@@ -58,7 +65,7 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
       </div>
 
       {/* How to Play — collapsible */}
-      <div style={styles.card}>
+      <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
         <button onClick={() => setShowHow(h => !h)} style={styles.howToggle}>
           {showHow ? "▲" : "▼"} &nbsp; How to Play
         </button>
@@ -122,7 +129,7 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
         <button onClick={onViewHOF}   style={styles.ghostBtn}>🏆 Hall of Fame</button>
       </div>
 
-      <p style={styles.statsText}>
+      <p style={{ ...styles.statsText, ...(isCompact ? styles.statsTextCompact : null) }}>
         🎮 Played: {stats.played} &nbsp;|&nbsp; 🪙 Coins: {stats.coins}
       </p>
     </div>
@@ -132,11 +139,15 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
 const styles = {
   container:    { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
                   display:"flex", flexDirection:"column", alignItems:"center",
-                  justifyContent:"center", padding:"20px 16px", fontFamily:"monospace" },
+                  justifyContent:"center", padding:"20px 16px", fontFamily:"monospace",
+                  boxSizing:"border-box" },
+  containerCompact: { height:"100dvh", minHeight:"100dvh", justifyContent:"flex-start", overflowY:"auto", padding:"10px 12px" },
   title:        { fontSize:42, margin:0, color:"#00ff88", textShadow:"0 0 20px #00ff88" },
+  titleCompact: { fontSize:28, marginBottom:8 },
   sub:          { color:"#888", marginBottom:20 },
   card:         { background:"#16213e", borderRadius:12, padding:"20px 24px",
                   marginBottom:14, width:"100%", maxWidth:420, border:"1px solid #0f3460" },
+  cardCompact:  { padding:"14px 16px", marginBottom:10 },
   sectionTitle: { margin:"0 0 12px 0", fontSize:18, color:"#00ff88" },
   row:          { display:"flex", gap:10, flexWrap:"wrap", marginBottom:10 },
   diffBtn:      { flex:1, padding:"10px 0", borderRadius:8, border:"none",
@@ -150,6 +161,7 @@ const styles = {
   ghostBtn:     { flex:1, padding:10, background:"transparent", color:"#888",
                   border:"1px solid #333", borderRadius:8, cursor:"pointer" },
   statsText:    { color:"#555", marginTop:12, fontSize:13 },
+  statsTextCompact: { marginTop:6, marginBottom:4 },
   howToggle:    { width:"100%", background:"transparent", color:"#00ff88",
                   border:"none", cursor:"pointer", fontSize:16,
                   fontWeight:"bold", textAlign:"left", fontFamily:"monospace", padding:0 },
