@@ -5,6 +5,20 @@ import { saveMaze, saveHOF, updateStats } from "../utils/storage";
 import { callGamePix, reportGamePause, reportGameReady } from "../utils/gamepix";
 
 const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
+const MIN_MAZE_SIZE = 160;
+const HORIZONTAL_PADDING = 24;
+const VERTICAL_PADDING = 24;
+
+export function calculateMazeBounds(containerWidth, containerHeight, chromeHeights = {}) {
+  const { hudHeight = 0, dpadHeight = 0, quitHeight = 0 } = chromeHeights;
+  return {
+    maxWidth: Math.max(MIN_MAZE_SIZE, containerWidth - HORIZONTAL_PADDING),
+    maxHeight: Math.max(
+      MIN_MAZE_SIZE,
+      containerHeight - hudHeight - dpadHeight - quitHeight - VERTICAL_PADDING
+    ),
+  };
+}
 
 export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const { grid: initGrid, width, height } = mazeData;
@@ -35,6 +49,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
     maxWidth: Math.floor(window.innerWidth * 0.92),
     maxHeight: Math.floor(window.innerHeight * 0.62),
   });
+  const [dpadScale, setDpadScale] = useState(1);
 
   // GamePix Integration: Pause/Resume lifecycle
   useEffect(() => {
@@ -140,10 +155,9 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       const hudHeight = hudRef.current?.getBoundingClientRect().height || 0;
       const dpadHeight = dpadRef.current?.getBoundingClientRect().height || 0;
       const quitHeight = quitRef.current?.getBoundingClientRect().height || 0;
-      const verticalPadding = 64;
-      const maxWidth = Math.max(160, rootRect.width - 24);
-      const maxHeight = Math.max(160, rootRect.height - hudHeight - dpadHeight - quitHeight - verticalPadding);
-      setMazeBounds({ maxWidth, maxHeight });
+      setMazeBounds(calculateMazeBounds(rootRect.width, rootRect.height, { hudHeight, dpadHeight, quitHeight }));
+      const compactScale = rootRect.height <= 450 ? 0.84 : 1;
+      setDpadScale(compactScale);
     };
 
     updateMazeBounds();
@@ -208,7 +222,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       <div
         onTouchStart={handleMazeTouchStart}
         onTouchEnd={handleMazeTouchEnd}
-        style={{ touchAction: "none" }}
+        style={styles.mazeArea}
       >
         <MazeGrid
           grid={grid}
@@ -221,7 +235,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       </div>
 
       {/* D-Pad */}
-      <div ref={dpadRef} style={styles.dpad}>
+      <div ref={dpadRef} style={{ ...styles.dpad, transform: `scale(${dpadScale})` }}>
         <div style={styles.dpadRow}>
           <DpadBtn onPress={dpadPress(0,-1)}>▲</DpadBtn>
         </div>
@@ -271,15 +285,17 @@ function DpadBtn({ onPress, children }) {
 }
 
 const styles = {
-  // ... (Styles remain the same)
-  container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
+  container:  { height:"100dvh", maxHeight:"100vh", width:"100%", boxSizing:"border-box",
+                overflow:"hidden", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
-                padding:"10px 8px", fontFamily:"monospace",
+                padding:"8px", fontFamily:"monospace",
                 userSelect:"none", WebkitUserSelect:"none" },
+  mazeArea:    { flex:1, minHeight:0, width:"100%", display:"flex", justifyContent:"center",
+                alignItems:"center", touchAction:"none" },
   hud:        { display:"flex", gap:16, background:"#16213e", borderRadius:10,
                 padding:"8px 16px", marginBottom:10, fontSize:14,
                 flexWrap:"wrap", justifyContent:"center" },
-  dpad:       { marginTop:16, display:"flex", flexDirection:"column",
+  dpad:       { marginTop:8, marginBottom:6, display:"flex", flexDirection:"column",
                 alignItems:"center", gap:6 },
   dpadRow:    { display:"flex", gap:6, alignItems:"center" },
   dpadCenter: { width:54, height:54 },
