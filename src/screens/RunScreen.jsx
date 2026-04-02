@@ -5,7 +5,7 @@ import { saveMaze, saveHOF, updateStats } from "../utils/storage";
 import { callGamePix, reportGamePause, reportGameReady } from "../utils/gamepix";
 
 const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
-const MIN_MAZE_SIZE = 160;
+const MIN_MAZE_SIZE = 120;
 const HORIZONTAL_PADDING = 24;
 const VERTICAL_PADDING = 40;
 

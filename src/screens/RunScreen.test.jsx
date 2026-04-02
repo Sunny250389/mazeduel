@@ -20,6 +20,6 @@ describe("calculateMazeBounds", () => {
     });
 
     expect(bounds.maxWidth).toBe(236);
-    expect(bounds.maxHeight).toBe(160);
+    expect(bounds.maxHeight).toBe(120);
   });
 });

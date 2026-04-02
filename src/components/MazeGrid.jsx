@@ -100,7 +100,7 @@ export default function MazeGrid({ grid, width, height, player, maxWidth, maxHei
     Math.floor((maxHeight || window.innerHeight * 0.65) / height),
     36
   );
-  const clampedCellSize = Math.max(8, cellSize);
+  const clampedCellSize = Math.max(6, cellSize);
 
   return (
     <div
