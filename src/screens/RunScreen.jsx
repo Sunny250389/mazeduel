@@ -5,6 +5,20 @@ import { saveMaze, saveHOF, updateStats } from "../utils/storage";
 import { callGamePix, reportGamePause, reportGameReady } from "../utils/gamepix";
 
 const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
+const MIN_MAZE_SIZE = 120;
+const HORIZONTAL_PADDING = 24;
+const VERTICAL_PADDING = 40;
+
+export function calculateMazeBounds(containerWidth, containerHeight, chromeHeights = {}) {
+  const { hudHeight = 0, dpadHeight = 0, quitHeight = 0 } = chromeHeights;
+  return {
+    maxWidth: Math.max(MIN_MAZE_SIZE, containerWidth - HORIZONTAL_PADDING),
+    maxHeight: Math.max(
+      MIN_MAZE_SIZE,
+      containerHeight - hudHeight - dpadHeight - quitHeight - VERTICAL_PADDING
+    ),
+  };
+}
 
 export default function RunScreen({ mazeData, difficulty, onFinish }) {
   const { grid: initGrid, width, height } = mazeData;
@@ -140,10 +154,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       const hudHeight = hudRef.current?.getBoundingClientRect().height || 0;
       const dpadHeight = dpadRef.current?.getBoundingClientRect().height || 0;
       const quitHeight = quitRef.current?.getBoundingClientRect().height || 0;
-      const verticalPadding = 64;
-      const maxWidth = Math.max(160, rootRect.width - 24);
-      const maxHeight = Math.max(160, rootRect.height - hudHeight - dpadHeight - quitHeight - verticalPadding);
-      setMazeBounds({ maxWidth, maxHeight });
+      setMazeBounds(calculateMazeBounds(rootRect.width, rootRect.height, { hudHeight, dpadHeight, quitHeight }));
     };
 
     updateMazeBounds();
@@ -208,7 +219,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       <div
         onTouchStart={handleMazeTouchStart}
         onTouchEnd={handleMazeTouchEnd}
-        style={{ touchAction: "none" }}
+        style={styles.mazeArea}
       >
         <MazeGrid
           grid={grid}
@@ -271,19 +282,21 @@ function DpadBtn({ onPress, children }) {
 }
 
 const styles = {
-  // ... (Styles remain the same)
-  container:  { minHeight:"100vh", background:"#0a0a1a", color:"#fff",
+  container:  { height:"100dvh", maxHeight:"100vh", width:"100%", boxSizing:"border-box",
+                overflow:"hidden", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
-                padding:"10px 8px", fontFamily:"monospace",
+                gap:8, padding:"8px", fontFamily:"monospace",
                 userSelect:"none", WebkitUserSelect:"none" },
+  mazeArea:    { flex:1, minHeight:0, width:"100%", display:"flex", justifyContent:"center",
+                alignItems:"center", paddingBottom:4, touchAction:"none" },
   hud:        { display:"flex", gap:16, background:"#16213e", borderRadius:10,
-                padding:"8px 16px", marginBottom:10, fontSize:14,
+                padding:"8px 16px", fontSize:14,
                 flexWrap:"wrap", justifyContent:"center" },
-  dpad:       { marginTop:16, display:"flex", flexDirection:"column",
+  dpad:       { marginTop:4, marginBottom:4, display:"flex", flexDirection:"column",
                 alignItems:"center", gap:6 },
   dpadRow:    { display:"flex", gap:6, alignItems:"center" },
-  dpadCenter: { width:54, height:54 },
-  dpadBtn:    { width:54, height:54, fontSize:22, background:"#16213e",
+  dpadCenter: { width:"clamp(40px, 9vh, 54px)", height:"clamp(40px, 9vh, 54px)" },
+  dpadBtn:    { width:"clamp(40px, 9vh, 54px)", height:"clamp(40px, 9vh, 54px)", fontSize:"clamp(18px, 4vh, 22px)", background:"#16213e",
                 color:"#00ff88", border:"1px solid #0f3460", borderRadius:12,
                 cursor:"pointer", touchAction:"manipulation",
                 WebkitTapHighlightColor:"transparent",
@@ -299,7 +312,7 @@ const styles = {
   btnGhost:   { padding:"10px 18px", background:"transparent", color:"#888",
                 border:"1px solid #333", borderRadius:8, cursor:"pointer",
                 touchAction:"manipulation" },
-  quitBtn:    { marginTop:12, background:"transparent", color:"#555",
+  quitBtn:    { marginTop:4, background:"transparent", color:"#555",
                 border:"none", cursor:"pointer", fontSize:14,
                 touchAction:"manipulation" },
 };
