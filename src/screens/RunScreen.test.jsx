@@ -9,7 +9,7 @@ describe("calculateMazeBounds", () => {
     });
 
     expect(bounds.maxWidth).toBe(776);
-    expect(bounds.maxHeight).toBe(210);
+    expect(bounds.maxHeight).toBe(194);
   });
 
   test("keeps a minimum visible maze area", () => {

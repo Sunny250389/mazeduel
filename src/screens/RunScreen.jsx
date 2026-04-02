@@ -7,7 +7,7 @@ import { callGamePix, reportGamePause, reportGameReady } from "../utils/gamepix"
 const TIME_LIMITS = { easy: 60, medium: 90, hard: 150 };
 const MIN_MAZE_SIZE = 160;
 const HORIZONTAL_PADDING = 24;
-const VERTICAL_PADDING = 24;
+const VERTICAL_PADDING = 40;
 
 export function calculateMazeBounds(containerWidth, containerHeight, chromeHeights = {}) {
   const { hudHeight = 0, dpadHeight = 0, quitHeight = 0 } = chromeHeights;
@@ -49,7 +49,6 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
     maxWidth: Math.floor(window.innerWidth * 0.92),
     maxHeight: Math.floor(window.innerHeight * 0.62),
   });
-  const [dpadScale, setDpadScale] = useState(1);
 
   // GamePix Integration: Pause/Resume lifecycle
   useEffect(() => {
@@ -156,8 +155,6 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       const dpadHeight = dpadRef.current?.getBoundingClientRect().height || 0;
       const quitHeight = quitRef.current?.getBoundingClientRect().height || 0;
       setMazeBounds(calculateMazeBounds(rootRect.width, rootRect.height, { hudHeight, dpadHeight, quitHeight }));
-      const compactScale = rootRect.height <= 450 ? 0.84 : 1;
-      setDpadScale(compactScale);
     };
 
     updateMazeBounds();
@@ -235,7 +232,7 @@ export default function RunScreen({ mazeData, difficulty, onFinish }) {
       </div>
 
       {/* D-Pad */}
-      <div ref={dpadRef} style={{ ...styles.dpad, transform: `scale(${dpadScale})` }}>
+      <div ref={dpadRef} style={styles.dpad}>
         <div style={styles.dpadRow}>
           <DpadBtn onPress={dpadPress(0,-1)}>▲</DpadBtn>
         </div>
@@ -288,18 +285,18 @@ const styles = {
   container:  { height:"100dvh", maxHeight:"100vh", width:"100%", boxSizing:"border-box",
                 overflow:"hidden", background:"#0a0a1a", color:"#fff",
                 display:"flex", flexDirection:"column", alignItems:"center",
-                padding:"8px", fontFamily:"monospace",
+                gap:8, padding:"8px", fontFamily:"monospace",
                 userSelect:"none", WebkitUserSelect:"none" },
   mazeArea:    { flex:1, minHeight:0, width:"100%", display:"flex", justifyContent:"center",
-                alignItems:"center", touchAction:"none" },
+                alignItems:"center", paddingBottom:4, touchAction:"none" },
   hud:        { display:"flex", gap:16, background:"#16213e", borderRadius:10,
-                padding:"8px 16px", marginBottom:10, fontSize:14,
+                padding:"8px 16px", fontSize:14,
                 flexWrap:"wrap", justifyContent:"center" },
-  dpad:       { marginTop:8, marginBottom:6, display:"flex", flexDirection:"column",
+  dpad:       { marginTop:4, marginBottom:4, display:"flex", flexDirection:"column",
                 alignItems:"center", gap:6 },
   dpadRow:    { display:"flex", gap:6, alignItems:"center" },
-  dpadCenter: { width:54, height:54 },
-  dpadBtn:    { width:54, height:54, fontSize:22, background:"#16213e",
+  dpadCenter: { width:"clamp(40px, 9vh, 54px)", height:"clamp(40px, 9vh, 54px)" },
+  dpadBtn:    { width:"clamp(40px, 9vh, 54px)", height:"clamp(40px, 9vh, 54px)", fontSize:"clamp(18px, 4vh, 22px)", background:"#16213e",
                 color:"#00ff88", border:"1px solid #0f3460", borderRadius:12,
                 cursor:"pointer", touchAction:"manipulation",
                 WebkitTapHighlightColor:"transparent",
@@ -315,7 +312,7 @@ const styles = {
   btnGhost:   { padding:"10px 18px", background:"transparent", color:"#888",
                 border:"1px solid #333", borderRadius:8, cursor:"pointer",
                 touchAction:"manipulation" },
-  quitBtn:    { marginTop:12, background:"transparent", color:"#555",
+  quitBtn:    { marginTop:4, background:"transparent", color:"#555",
                 border:"none", cursor:"pointer", fontSize:14,
                 touchAction:"manipulation" },
 };
