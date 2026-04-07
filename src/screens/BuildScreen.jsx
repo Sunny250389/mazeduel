@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { T, encodeMaze, buildShareURL } from "../utils/mazeGenerator";
+import { T } from "../utils/mazeGenerator";
 
 const TOOLS = [
   { tile: T.WALL,  label:"🧱", name:"Wall"  },
@@ -41,8 +41,6 @@ export function calculateBuildCellSize(size, maxWidth, maxHeight) {
 export default function BuildScreen({ onDone, onCancel }) {
   const [size,      setSize]      = useState(11);
   const [tool,      setTool]      = useState(T.PATH);
-  const [shareCode, setShareCode] = useState(null);
-  const [copied,    setCopied]    = useState(false);
   const [validationMsg, setValidationMsg] = useState("");
   const [,          forceRender]  = useState(0);
 
@@ -63,7 +61,6 @@ export default function BuildScreen({ onDone, onCancel }) {
     sizeRef.current = s;
     gridRef.current = makeGrid(s);
     setSize(s);
-    setShareCode(null);
     setValidationMsg("");
     forceRender(n => n + 1);
   };
@@ -166,55 +163,12 @@ export default function BuildScreen({ onDone, onCancel }) {
       return;
     }
     setValidationMsg("");
-    const mazeData = {
+    onDone({
       grid: gridRef.current.map(r => [...r]),
-      width: sizeRef.current, height: sizeRef.current, difficulty: "custom"
-    };
-    setShareCode(buildShareURL(mazeData));      // generates full url
-  };
-
-  const copyCode = async () => {
-    if (!shareCode) return;
-
-    let copiedOk = false;
-
-    // Primary API (may be blocked in embedded/sandboxed iframes)
-    if (navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(shareCode);
-        copiedOk = true;
-      } catch (_) {
-        copiedOk = false;
-      }
-    }
-
-    // Fallback for restricted iframe environments (e.g. GamePix)
-    if (!copiedOk) {
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = shareCode;
-        textArea.setAttribute("readonly", "");
-        textArea.style.position = "fixed";
-        textArea.style.top = "-9999px";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        copiedOk = document.execCommand("copy");
-        document.body.removeChild(textArea);
-      } catch (_) {
-        copiedOk = false;
-      }
-    }
-
-    if (!copiedOk) {
-      // Last-resort manual copy prompt.
-      window.prompt("Copy your maze code:", shareCode);
-      return;
-    }
-
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+      width: sizeRef.current,
+      height: sizeRef.current,
+      difficulty: "custom",
+    });
   };
 
 //   const cellPx = Math.min(
@@ -289,7 +243,7 @@ export default function BuildScreen({ onDone, onCancel }) {
 {/*         )} */}
       <div
         ref={gridAreaRef}
-        style={{ ...styles.gridArea, ...(shareCode ? styles.gridAreaWithShare : null) }}
+        style={styles.gridArea}
       >
         <div
           ref={containerRef}
@@ -321,32 +275,8 @@ export default function BuildScreen({ onDone, onCancel }) {
       </div>
 
       <div style={{...styles.row, marginTop:14}}>
-        {!shareCode ? (
-          <>
-            <button style={styles.primaryBtn} onPointerDown={handleDone}>✅ Done & Get Share Code</button>
-            <button style={styles.ghostBtn}   onPointerDown={onCancel}>Cancel</button>
-          </>
-        ) : (
-          <div style={styles.shareCard}>
-            <p style={styles.shareTitle}>🎉 Maze Ready!</p>
-            <p style={{color:"#aaa", fontSize:12, marginBottom:8}}>Share this code with your friend:</p>
-            <div style={styles.codeBox}>
-              <code style={styles.codeText}>{shareCode}</code>
-            </div>
-            <div style={styles.row}>
-              <button style={styles.primaryBtn} onPointerDown={copyCode}>
-                {copied ? "✅ Copied!" : "📋 Copy Code"}
-              </button>
-              <button style={styles.primaryBtn}
-                onPointerDown={() => onDone({ grid: gridRef.current.map(r=>[...r]),
-                  width: sizeRef.current, height: sizeRef.current, difficulty:"custom" })}>
-                ▶ Play It Yourself
-              </button>
-            </div>
-            <p style={styles.shareHint}>Friend: Open app → "📥 Friend's Maze" → Paste code → Play!</p>
-            <button style={styles.ghostBtn} onPointerDown={onCancel}>🏠 Home</button>
-          </div>
-        )}
+        <button style={styles.primaryBtn} onPointerDown={handleDone}>✅ Done</button>
+        <button style={styles.ghostBtn}   onPointerDown={onCancel}>Cancel</button>
       </div>
     </div>
   );
@@ -360,7 +290,6 @@ const styles = {
                 justifyContent:"flex-start", overflowY:"auto", overflowX:"hidden" },
   gridArea:   { flex:1, width:"100%", display:"flex", justifyContent:"center",
                 alignItems:"center", minHeight:120, marginTop:6, marginBottom:6 },
-  gridAreaWithShare: { flex:"0 0 auto", minHeight:0, marginTop:4, marginBottom:8 },
   title:      { color:"#00ff88", marginBottom:10 },
   row:        { display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center", marginBottom:8 },
   sizeBtn:    { padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer",
@@ -378,12 +307,5 @@ const styles = {
                 touchAction:"manipulation", WebkitTapHighlightColor:"transparent" },
   ghostBtn:   { padding:"11px 16px", background:"transparent", color:"#888",
                 border:"1px solid #333", borderRadius:8, cursor:"pointer", touchAction:"manipulation" },
-  shareCard:  { background:"#16213e", border:"2px solid #00ff88", borderRadius:12,
-                padding:"16px 18px", width:"100%", maxWidth:420, textAlign:"center", marginBottom:12 },
-  shareTitle: { color:"#00ff88", fontWeight:"bold", fontSize:18, margin:"0 0 4px 0" },
-  codeBox:    { background:"#0a0a1a", borderRadius:8, padding:"10px",
-                marginBottom:12, wordBreak:"break-all" },
-  codeText:   { color:"#ffd700", fontSize:11, lineHeight:1.6 },
-  shareHint:  { color:"#888", fontSize:12, margin:"10px 0 12px 0" },
   validationMsg: { color:"#ffbf69", fontSize:12, margin:"2px 0 10px 0", textAlign:"center" },
 };

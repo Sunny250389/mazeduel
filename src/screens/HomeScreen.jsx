@@ -12,7 +12,7 @@ const TILES = [
   { icon: "◎",  name: "Portal", desc: "Teleports you across maze" },
 ];
 
-export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, onViewHOF }) {
+export default function HomeScreen({ onPlay, onViewMazes, onViewHOF }) {
   const [difficulty, setDifficulty] = useState("easy");
   const [showHow, setShowHow]       = useState(false);
   const [isCompact, setIsCompact]   = useState(() => window.innerHeight <= 450);
@@ -53,15 +53,6 @@ export default function HomeScreen({ onPlay, onBuild, onRunShared, onViewMazes, 
         <button onClick={() => onPlay(difficulty)} style={{ ...styles.primaryBtn, ...(isCompact ? styles.primaryBtnCompact : null) }}>
           ▶ Play Now
         </button>
-      </div>
-
-      {/* Two Players */}
-      <div style={{ ...styles.card, ...(isCompact ? styles.cardCompact : null) }}>
-        <h2 style={{ ...styles.sectionTitle, ...(isCompact ? styles.sectionTitleCompact : null) }}>Two Players</h2>
-        <div style={styles.row}>
-          <button onClick={onBuild}     style={{ ...styles.secondaryBtn, ...(isCompact ? styles.secondaryBtnCompact : null) }}>🔨 Build Maze</button>
-          <button onClick={onRunShared} style={{ ...styles.secondaryBtn, ...(isCompact ? styles.secondaryBtnCompact : null) }}>📥 Friend's Maze</button>
-        </div>
       </div>
 
       {/* How to Play — collapsible */}
@@ -159,9 +150,6 @@ const styles = {
                   border:"none", borderRadius:10, fontWeight:"bold",
                   fontSize:16, cursor:"pointer", marginTop:4 },
   primaryBtnCompact: { padding:10, fontSize:14 },
-  secondaryBtn: { flex:1, padding:12, background:"#0f3460", color:"#fff",
-                  border:"1px solid #00ff8844", borderRadius:8, cursor:"pointer", fontSize:14 },
-  secondaryBtnCompact: { padding:9, fontSize:13 },
   ghostBtn:     { flex:1, padding:10, background:"transparent", color:"#888",
                   border:"1px solid #333", borderRadius:8, cursor:"pointer" },
   statsText:    { color:"#555", marginTop:12, fontSize:13 },
