@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import RunScreen from "./screens/RunScreen";
-import BuildScreen from "./screens/BuildScreen";
 import MyMazesScreen from "./screens/MyMazesScreen";
 import HOFScreen from "./screens/HOFScreen";
 import { generateMaze, getMazeFromURL, clearMazeFromURL } from "./utils/mazeGenerator";
@@ -56,10 +55,8 @@ export default function App() {
       <HomeScreen
         difficulty={difficulty}
         onPlay={goPlay}
-        onBuild={() => setScreen("build")}
         onViewMazes={() => setScreen("mazes")}
         onViewHOF={() => setScreen("hof")}
-        onRunShared={() => setScreen("mazes")}
       />
     );
   }
@@ -70,15 +67,6 @@ export default function App() {
         mazeData={mazeData}
         difficulty={difficulty}
         onFinish={handleFinish}
-      />
-    );
-  }
-
-  if (screen === "build") {
-    return (
-      <BuildScreen
-        onDone={(data) => goPlay("medium", data)}
-        onCancel={() => setScreen("home")}
       />
     );
   }
