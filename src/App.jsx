@@ -12,6 +12,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [difficulty, setDifficulty] = useState("medium");
   const [mazeData, setMazeData] = useState(null);
+  const [runInstance, setRunInstance] = useState(0);
 
   useEffect(() => {
     const urlMaze = getMazeFromURL();
@@ -42,12 +43,21 @@ export default function App() {
   const goPlay = (diff, data = null) => {
     setDifficulty(diff);
     setMazeData(data || generateMaze(diff));
+    setRunInstance((prev) => prev + 1);
     setScreen("run");
   };
 
-  const handleFinish = (score) => {
+  const handleFinish = (action) => {
+    if (action === "replay") {
+      setRunInstance((prev) => prev + 1);
+      setScreen("run");
+      return;
+    }
+
     setScreen("home");
-    clearMazeFromURL();
+    if (action === "home") {
+      clearMazeFromURL();
+    }
   };
 
   if (screen === "home") {
@@ -64,6 +74,7 @@ export default function App() {
   if (screen === "run" && mazeData) {
     return (
       <RunScreen
+        key={runInstance}
         mazeData={mazeData}
         difficulty={difficulty}
         onFinish={handleFinish}
